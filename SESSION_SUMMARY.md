@@ -35,7 +35,7 @@ C:\Users\Buda_Boss\OneDrive\Desktop\journal-app\
 ## Database
 - **PostgreSQL** running locally on `localhost:5432`
 - **Database name:** `journal_db`
-- **Tables created:** `users` (auto-created by SQLAlchemy on startup)
+- **Tables created:** `users`, `entries` (auto-created by SQLAlchemy on startup)
 
 ---
 
@@ -81,6 +81,19 @@ git push
 - Learned: JWT structure, OAuth2PasswordBearer, password hashing with bcrypt,
   dependency injection for auth, HTTP status codes, reading secrets with `os.getenv()`
 
+### ✅ Session 4 — Journal Entries CRUD
+- Fixed `.env` still being tracked by Git — ran `git rm --cached .env`
+- Added `Entry` model to `models.py` with a foreign key linking to `users`
+- Added entry schemas to `schemas.py` — `EntryCreate`, `EntryUpdate`, `EntryResponse`
+- Built all 5 journal entry endpoints (all JWT protected):
+  - `POST /entries` — create an entry
+  - `GET /entries` — get YOUR entries only
+  - `GET /entries/{id}` — get one entry
+  - `PUT /entries/{id}` — update an entry
+  - `DELETE /entries/{id}` — delete an entry
+- Tested all endpoints successfully in `/docs`
+- Learned: foreign keys, ownership checks, path parameters, `exclude_unset=True`, 204 status code
+
 ---
 
 ## Working Endpoints
@@ -90,6 +103,11 @@ git push
 | POST | `/auth/register` | No | Create new user |
 | POST | `/auth/login` | No | Login, returns JWT token |
 | GET | `/users/me` | ✅ Yes | Get current logged-in user |
+| POST | `/entries` | ✅ Yes | Create a new journal entry |
+| GET | `/entries` | ✅ Yes | Get all your entries |
+| GET | `/entries/{id}` | ✅ Yes | Get one entry by ID |
+| PUT | `/entries/{id}` | ✅ Yes | Update an entry |
+| DELETE | `/entries/{id}` | ✅ Yes | Delete an entry |
 
 ---
 
@@ -105,26 +123,20 @@ git push
 | `"sub"` claim | Standard JWT field for storing user identity (user id) |
 | `response_model` | Controls what fields are returned — hides password hash |
 | `.env` security | Secrets live in `.env` only — never commit to GitHub |
-| HTTP status codes | 200 success, 400 bad request, 401 unauthorized, 500 server crash |
+| HTTP status codes | 200 success, 201 created, 204 deleted, 400 bad request, 401 unauthorized, 404 not found |
+| Foreign keys | `owner_id` links every entry to the user who created it |
+| Ownership checks | `filter(Entry.owner_id == current_user.id)` — users only see their own data |
+| Path parameters | `/entries/{entry_id}` — the ID comes from the URL |
+| `exclude_unset=True` | Only updates fields the user actually sent — ignores missing ones |
 
 ---
 
-## Session 4 — What To Build Next
-1. Add `Entry` model to `models.py` with a **foreign key** linking to `users`
-2. Add entry schemas to `schemas.py`
-3. Build journal entries CRUD endpoints (all protected):
-   - `POST /entries` — create an entry
-   - `GET /entries` — get YOUR entries only
-   - `GET /entries/{id}` — get one entry
-   - `PUT /entries/{id}` — update an entry
-   - `DELETE /entries/{id}` — delete an entry
-4. Learn: foreign keys, ownership checks, path parameters
-
----
-
-> https://github.com/stephenongoma/journal-app. We completed Sessions 1, 2 and 3 — we
-> connected to PostgreSQL, built user registration, and added JWT authentication.
-> Please refer to SESSION_SUMMARY.md in my project."
+## Session 5 — What To Build Next
+1. Add **pagination** to `GET /entries` — limit how many entries are returned at once
+2. Add **search** — filter entries by keyword in title or content
+3. Add **mood tracking** — add a `mood` field to entries (happy, sad, neutral, etc.)
+4. Add **tags** — label entries for easy filtering
+5. Learn: query parameters, optional filters, Enum types in SQLAlchemy
 
 ---
 
