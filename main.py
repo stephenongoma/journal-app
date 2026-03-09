@@ -88,11 +88,26 @@ def create_entry(entry: schemas.EntryCreate, db: Session = Depends(get_db), curr
 
 
 # Get all entries belonging to the logged-in user
+# Get all entries belonging to the logged-in user
+# Get all entries belonging to the logged-in user
 @app.get("/entries", response_model=list[schemas.EntryResponse])
-def get_entries(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    # Filter by owner_id so users only see their own entries
-    return db.query(Entry).filter(Entry.owner_id == current_user.id).all()
+def get_entries(
+    skip: int = 0,
+    limit: int = 10,
+    search: str = None,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    query = db.query(Entry).filter(Entry.owner_id == current_user.id)
 
+    # If a search term was provided, filter by title or content
+    if search:
+        query = query.filter(
+            Entry.title.ilike(f"%{search}%") |
+            Entry.content.ilike(f"%{search}%")
+        )
+
+    return query.offset(skip).limit(limit).all()
 
 # Get a single entry by ID (only if it belongs to the logged-in user)
 @app.get("/entries/{entry_id}", response_model=schemas.EntryResponse)
