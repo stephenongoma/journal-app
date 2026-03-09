@@ -12,7 +12,7 @@
 - ✅ VS Code + Python extension
 - ✅ Git (connected to GitHub)
 - ✅ Virtual environment: `venv\Scripts\activate`
-- ✅ Packages installed: `fastapi`, `uvicorn`, `sqlalchemy`, `psycopg2-binary`, `python-dotenv`, `passlib[bcrypt]`, `python-jose[cryptography]`, `python-multipart`
+- ✅ Packages installed: `fastapi`, `uvicorn`, `sqlalchemy`, `psycopg2-binary`, `python-dotenv`, `passlib[bcrypt]`, `python-jose[cryptography]`, `python-multipart`, `alembic`
 
 ---
 
@@ -24,6 +24,10 @@ C:\Users\Buda_Boss\OneDrive\Desktop\journal-app\
 ├── models.py        # SQLAlchemy database models (table definitions)
 ├── schemas.py       # Pydantic schemas (request/response shapes)
 ├── database.py      # PostgreSQL connection and get_db dependency
+├── alembic.ini      # Alembic configuration file
+├── migrations/      # Alembic migrations folder
+│   ├── env.py       # Alembic environment setup
+│   └── versions/    # Migration files live here
 ├── .env             # Secret keys and DB URL — NEVER commit to GitHub
 ├── .env.example     # Safe version to commit — shows what vars are needed
 ├── .gitignore       # Ignores venv/, .env, __pycache__
@@ -94,6 +98,15 @@ git push
 - Tested all endpoints successfully in `/docs`
 - Learned: foreign keys, ownership checks, path parameters, `exclude_unset=True`, 204 status code
 
+### ✅ Session 5 — Pagination, Search & Mood Tracking
+- Added `skip` and `limit` query parameters to `GET /entries` for pagination
+- Added `search` query parameter to `GET /entries` — filters by keyword in title or content
+- Added `mood` field to entries using SQLAlchemy `Enum` type (happy, sad, neutral, angry, anxious)
+- Set up Alembic for database migrations
+- Generated and applied first migration to add `mood` column to existing `entries` table
+- Updated `schemas.py` to include `MoodEnum` and optional mood field in all entry schemas
+- Learned: query parameters, `.offset()/.limit()`, `.ilike()`, Enum types, Alembic migrations
+
 ---
 
 ## Working Endpoints
@@ -104,7 +117,7 @@ git push
 | POST | `/auth/login` | No | Login, returns JWT token |
 | GET | `/users/me` | ✅ Yes | Get current logged-in user |
 | POST | `/entries` | ✅ Yes | Create a new journal entry |
-| GET | `/entries` | ✅ Yes | Get all your entries |
+| GET | `/entries` | ✅ Yes | Get all your entries (supports `skip`, `limit`, `search`) |
 | GET | `/entries/{id}` | ✅ Yes | Get one entry by ID |
 | PUT | `/entries/{id}` | ✅ Yes | Update an entry |
 | DELETE | `/entries/{id}` | ✅ Yes | Delete an entry |
@@ -128,21 +141,25 @@ git push
 | Ownership checks | `filter(Entry.owner_id == current_user.id)` — users only see their own data |
 | Path parameters | `/entries/{entry_id}` — the ID comes from the URL |
 | `exclude_unset=True` | Only updates fields the user actually sent — ignores missing ones |
+| Query parameters | `?skip=0&limit=10&search=happy` — optional filters passed in the URL |
+| Pagination | `.offset(skip).limit(limit)` — controls which page of results is returned |
+| `.ilike()` | Case-insensitive SQL LIKE search — `%keyword%` means contains |
+| Enum types | Restricts a field to a fixed set of values e.g. mood options |
+| Alembic migrations | Tool for safely altering existing database tables without losing data |
 
 ---
 
-## Session 5 — What To Build Next
-1. Add **pagination** to `GET /entries` — limit how many entries are returned at once
-2. Add **search** — filter entries by keyword in title or content
-3. Add **mood tracking** — add a `mood` field to entries (happy, sad, neutral, etc.)
-4. Add **tags** — label entries for easy filtering
-5. Learn: query parameters, optional filters, Enum types in SQLAlchemy
+## Session 6 — What To Build Next
+1. Add **tags** — label entries for easy filtering (introduces many-to-many relationships)
+2. Add **mood filter** — filter `GET /entries` by mood e.g. `?mood=happy`
+3. Add **entry stats** — count entries per mood, calculate streaks
+4. Learn: many-to-many relationships, junction tables, aggregation queries
 
 ---
 
 ## App Features Planned
 - Personal diary / daily entries
-- Mood tracking
+- Mood tracking ✅
 - Search & tags
 - Photos / media
 - Reminders & streaks
